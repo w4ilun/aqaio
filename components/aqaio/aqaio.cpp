@@ -1,5 +1,6 @@
 #include "aqaio.h"
 #include "esphome/core/log.h"
+#include "esphome/core/application.h"
 
 namespace esphome {
 namespace aqaio {
@@ -334,7 +335,11 @@ void AQAIOComponent::setup() {
     errorToString(error, error_message, sizeof(error_message));
     ESP_LOGE(TAG, "SEN66 deviceReset() error: %s", error_message);
   }
-  delay(1200);
+  // Feed watchdog during long delay (WDT timeout is ~5s)
+  for (int i = 0; i < 12; i++) {
+    delay(100);
+    App.feed_wdt();
+  }
 
   // Read serial number
   int8_t serial_number[32] = {0};
@@ -362,7 +367,11 @@ void AQAIOComponent::setup() {
     float _pm1, _pm2, _pm4, _pm10, _hum, _temp, _voc, _nox;
     uint16_t _co2;
     for (int i = 0; i < 10; i++) {
-      delay(1000);
+      // Feed watchdog during each 1s warm-up delay
+      for (int j = 0; j < 10; j++) {
+        delay(100);
+        App.feed_wdt();
+      }
       this->sen66_.readMeasuredValues(_pm1, _pm2, _pm4, _pm10,
                                       _hum, _temp, _voc, _nox, _co2);
       ESP_LOGD(TAG, "  warmup %d/10", i + 1);
