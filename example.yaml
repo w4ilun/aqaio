@@ -54,7 +54,6 @@ aqaio:
 
 sensor:
   - platform: aqaio
-    aqaio_id: aqaio_hub
     temperature:
       name: "Temperature"
     humidity:
@@ -73,3 +72,4 @@ sensor:
       name: "PM 4.0"
     pm_10_0:
       name: "PM 10"
+
