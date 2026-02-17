@@ -1,0 +1,75 @@
+# AQAIO - Air Quality All-In-One
+# Example ESPHome configuration for ESP32-C3 + SEN66 + e-paper display
+#
+# Usage:
+#   1. Copy this file to your ESPHome config directory
+#   2. Update the external_components URL to your repo
+#   3. Flash to your ESP32-C3
+
+esphome:
+  name: aqaio
+  friendly_name: "AQAIO Air Quality"
+
+esp32:
+  board: esp32-c3-devkitm-1
+  framework:
+    type: arduino
+
+logger:
+
+api:
+  encryption:
+    key: !secret api_key
+
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+external_components:
+  - source:
+      type: git
+      url: https://github.com/w4ilun/aqaio
+    components: [aqaio]
+
+aqaio:
+  id: aqaio_hub
+  update_interval: 60s
+  # I2C pins (SEN66)
+  i2c_sda: 10
+  i2c_scl: 9
+  # SPI pins (e-paper GDEH0154D67)
+  epd_mosi: 7
+  epd_sclk: 6
+  epd_cs: 5
+  epd_dc: 4
+  epd_rst: 3
+  epd_busy: 2
+  # Display settings
+  display_rotation: 0   # 0=vertical_up, 1=horizontal_left, 2=vertical_down, 3=horizontal_right
+  use_fahrenheit: false
+
+sensor:
+  - platform: aqaio
+    aqaio_id: aqaio_hub
+    temperature:
+      name: "Temperature"
+    humidity:
+      name: "Humidity"
+    co2:
+      name: "CO2"
+    voc:
+      name: "VOC Index"
+    nox:
+      name: "NOx Index"
+    pm_1_0:
+      name: "PM 1.0"
+    pm_2_5:
+      name: "PM 2.5"
+    pm_4_0:
+      name: "PM 4.0"
+    pm_10_0:
+      name: "PM 10"
