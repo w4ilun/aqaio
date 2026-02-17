@@ -59,7 +59,9 @@ async def to_code(config):
 
     cg.add_library("Wire", None)
     cg.add_library("SPI", None)
+    cg.add_library("Sensirion/Sensirion Core", None)
     cg.add_library("Sensirion/Sensirion I2C SEN66", None)
     cg.add_library("zinggjm/GxEPD2", None)
     cg.add_library("adafruit/Adafruit GFX Library", None)
     cg.add_library("adafruit/Adafruit BusIO", None)
+
