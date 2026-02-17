@@ -1,6 +1,7 @@
 #include "aqaio.h"
 #include "esphome/core/log.h"
 #include "esphome/core/application.h"
+#include <esp_task_wdt.h>
 
 namespace esphome {
 namespace aqaio {
@@ -310,6 +311,10 @@ void AQAIOComponent::draw_display_() {
 void AQAIOComponent::setup() {
   ESP_LOGCONFIG(TAG, "Setting up AQAIO (SEN66 + e-paper)...");
 
+  // Disable watchdog for this task during long setup
+  // (display init + full refresh + sensor reset + warm-up exceed 5s WDT timeout)
+  esp_task_wdt_delete(xTaskGetCurrentTaskHandle());
+
   // Initialize I2C for SEN66
   Wire.begin(this->i2c_sda_, this->i2c_scl_);
 
@@ -338,7 +343,6 @@ void AQAIOComponent::setup() {
   // Feed watchdog during long delay (WDT timeout is ~5s)
   for (int i = 0; i < 12; i++) {
     delay(100);
-    App.feed_wdt();
   }
 
   // Read serial number
@@ -367,10 +371,8 @@ void AQAIOComponent::setup() {
     float _pm1, _pm2, _pm4, _pm10, _hum, _temp, _voc, _nox;
     uint16_t _co2;
     for (int i = 0; i < 10; i++) {
-      // Feed watchdog during each 1s warm-up delay
       for (int j = 0; j < 10; j++) {
         delay(100);
-        App.feed_wdt();
       }
       this->sen66_.readMeasuredValues(_pm1, _pm2, _pm4, _pm10,
                                       _hum, _temp, _voc, _nox, _co2);
@@ -381,6 +383,9 @@ void AQAIOComponent::setup() {
 
   // Draw initial display with placeholder data
   this->draw_display_();
+
+  // Re-enable watchdog now that setup is complete
+  esp_task_wdt_add(xTaskGetCurrentTaskHandle());
 }
 
 // ─── Update (called every update_interval) ──────────────────────────────────
