@@ -269,10 +269,18 @@ void AQAIOComponent::draw_display_() {
 
   // ── Last update ────────────────────────────────────────────────────
   display_->setTextSize(1);
-  display_->setCursor(5, 195);
+  display_->setCursor(85, 192);
+  display_->print("Last Update: ");
   display_->print(this->last_update_time_);
 
-  display_->display(true);  // partial refresh
+  // Full refresh every 15 minutes to clear e-paper ghosting, partial otherwise
+  unsigned long now_ms = millis();
+  if (now_ms - this->last_full_refresh_millis_ >= 900000UL) {  // 15 min
+    display_->display(false);  // full refresh
+    this->last_full_refresh_millis_ = now_ms;
+  } else {
+    display_->display(true);   // partial refresh
+  }
 }
 
 // ─── Setup ──────────────────────────────────────────────────────────────────

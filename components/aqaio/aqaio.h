@@ -86,7 +86,8 @@ class AQAIOComponent : public PollingComponent {
   SensorData sensor_data_{};
   unsigned long last_update_millis_ = 0;
   bool sensor_ready_ = false;
-  char last_update_time_[9] = "--:--";  // "HH:MM:SS" or "--:--"
+  char last_update_time_[9] = "--:--";
+  unsigned long last_full_refresh_millis_ = 0;
 
   // Hardware objects (allocated in setup)
   SensirionI2cSen66 sen66_;
