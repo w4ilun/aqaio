@@ -56,12 +56,6 @@ static const unsigned char PROGMEM image_weather_temperature_bits[] = {
     0xbe,0x80,0x9c,0x80,0x41,0x00,0x3e,0x00
 };
 
-// ─── Air quality thresholds ─────────────────────────────────────────────────
-
-static const uint16_t AQ_CO2_MAX = 1000;
-static const float AQ_VOC_MAX = 150.0f;
-static const float AQ_NOX_MAX = 1.0f;
-static const float AQ_PM_MAX = 12.0f;
 
 // ─── Helper Functions ───────────────────────────────────────────────────────
 
@@ -74,20 +68,6 @@ float AQAIOComponent::to_display_temp_(float temp_c) {
 
 const char *AQAIOComponent::temp_unit_str_() {
   return this->use_fahrenheit_ ? "F" : "C";
-}
-
-void AQAIOComponent::format_elapsed_(unsigned long elapsed_ms, char *buf, size_t buf_len) {
-  unsigned long secs = elapsed_ms / 1000;
-  if (secs < 60) {
-    snprintf(buf, buf_len, "%lus ago", secs);
-  } else if (secs < 3600) {
-    unsigned long mins = secs / 60;
-    snprintf(buf, buf_len, "%lum ago", mins);
-  } else {
-    unsigned long hrs = secs / 3600;
-    unsigned long mins = (secs % 3600) / 60;
-    snprintf(buf, buf_len, "%luh%lum ago", hrs, mins);
-  }
 }
 
 // ─── Display Rendering ─────────────────────────────────────────────────────
@@ -273,13 +253,13 @@ void AQAIOComponent::draw_display_() {
 
   // ── Face bitmap (good vs bad air quality) ─────────────────────────
   bool good_air = sensor_data_.valid
-      && sensor_data_.co2 < AQ_CO2_MAX
-      && sensor_data_.voc_index < AQ_VOC_MAX
-      && sensor_data_.nox_index <= AQ_NOX_MAX
-      && sensor_data_.pm1p0 < AQ_PM_MAX
-      && sensor_data_.pm2p5 < AQ_PM_MAX
-      && sensor_data_.pm4p0 < AQ_PM_MAX
-      && sensor_data_.pm10p0 < AQ_PM_MAX;
+      && sensor_data_.co2 < this->aq_co2_max_
+      && sensor_data_.voc_index < this->aq_voc_max_
+      && sensor_data_.nox_index <= this->aq_nox_max_
+      && sensor_data_.pm1p0 < this->aq_pm_max_
+      && sensor_data_.pm2p5 < this->aq_pm_max_
+      && sensor_data_.pm4p0 < this->aq_pm_max_
+      && sensor_data_.pm10p0 < this->aq_pm_max_;
 
   if (good_air) {
     display_->drawBitmap(126, 141, image_happy_face_aq_bits, 58, 28, GxEPD_WHITE);
@@ -287,21 +267,10 @@ void AQAIOComponent::draw_display_() {
     display_->drawBitmap(126, 143, image_sad_face_aq_bits, 58, 28, GxEPD_WHITE);
   }
 
-  // ── Last update label ───────────────────────────────────────────────
+  // ── Last update ────────────────────────────────────────────────────
   display_->setTextSize(1);
-  display_->setCursor(97, 189);
-  display_->print("LAST UPDATE");
-
-  // ── Last update value ───────────────────────────────────────────────
-  display_->setCursor(169, 189);
-  if (sensor_data_.valid) {
-    unsigned long elapsed = millis() - last_update_millis_;
-    char elapsed_str[24];
-    format_elapsed_(elapsed, elapsed_str, sizeof(elapsed_str));
-    display_->print(elapsed_str);
-  } else {
-    display_->print("--:--");
-  }
+  display_->setCursor(5, 195);
+  display_->print(this->last_update_time_);
 
   display_->display(true);  // partial refresh
 }
@@ -429,6 +398,15 @@ void AQAIOComponent::update() {
     this->sensor_data_.co2 = co2;
     this->sensor_data_.valid = true;
     this->last_update_millis_ = millis();
+
+    // Capture current time for display
+    if (this->time_ != nullptr) {
+      auto now = this->time_->now();
+      if (now.is_valid()) {
+        snprintf(this->last_update_time_, sizeof(this->last_update_time_),
+                 "%02d:%02d:%02d", now.hour, now.minute, now.second);
+      }
+    }
 
     ESP_LOGD(TAG, "T=%.1f°C RH=%.1f%% CO2=%u VOC=%.0f NOx=%.0f "
                    "PM1=%.1f PM2.5=%.1f PM4=%.1f PM10=%.1f",
