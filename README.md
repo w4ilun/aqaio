@@ -23,4 +23,4 @@ A simple air quality monitor with a e-ink display, built with off the shelf part
 | RST      |       3      | EPD (GDEH0154D67) |
 | BUSY     |       2      | EPD (GDEH0154D67) |
 
-![AQAIO Wiring Diagram](./3D/aqaio-wiring.png)
+![AQAIO Wiring Diagram](./img/aqaio-wiring.png)
