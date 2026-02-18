@@ -2,6 +2,7 @@
 
 #include "esphome/core/component.h"
 #include "esphome/components/sensor/sensor.h"
+#include "esphome/components/time/real_time_clock.h"
 
 #include <Wire.h>
 #include <SPI.h>
@@ -40,6 +41,10 @@ class AQAIOComponent : public PollingComponent {
   }
   void set_display_rotation(int rot) { display_rotation_ = rot; }
   void set_use_fahrenheit(bool f) { use_fahrenheit_ = f; }
+  void set_time(time::RealTimeClock *time) { time_ = time; }
+  void set_aq_thresholds(uint16_t co2, uint16_t voc, uint16_t nox, uint16_t pm) {
+    aq_co2_max_ = co2; aq_voc_max_ = voc; aq_nox_max_ = nox; aq_pm_max_ = pm;
+  }
 
   // Home Assistant sensor setters
   void set_temperature_sensor(sensor::Sensor *s) { temperature_sensor_ = s; }
@@ -58,7 +63,6 @@ class AQAIOComponent : public PollingComponent {
   void draw_splash_();
   float to_display_temp_(float temp_c);
   const char *temp_unit_str_();
-  void format_elapsed_(unsigned long elapsed_ms, char *buf, size_t buf_len);
 
   // Pin config
   int i2c_sda_ = 10;
@@ -73,15 +77,21 @@ class AQAIOComponent : public PollingComponent {
   // Settings
   int display_rotation_ = 0;
   bool use_fahrenheit_ = false;
+  uint16_t aq_co2_max_ = 1000;
+  uint16_t aq_voc_max_ = 150;
+  uint16_t aq_nox_max_ = 1;
+  uint16_t aq_pm_max_ = 12;
 
   // State
   SensorData sensor_data_{};
   unsigned long last_update_millis_ = 0;
   bool sensor_ready_ = false;
+  char last_update_time_[9] = "--:--";  // "HH:MM:SS" or "--:--"
 
   // Hardware objects (allocated in setup)
   SensirionI2cSen66 sen66_;
   GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> *display_ = nullptr;
+  time::RealTimeClock *time_{nullptr};
 
   // Home Assistant sensors
   sensor::Sensor *temperature_sensor_{nullptr};
