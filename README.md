@@ -8,7 +8,7 @@ A simple air quality monitor with a e-ink display, built with off the shelf part
 - [SEN66 Sensor PM, RH/T, VOC, NOx and CO2](https://sensirion.com/products/catalog/SEN66)
 - [1.54" E-Ink Display Module](https://www.aliexpress.us/item/3256806104827483.html)
 - [ESP32-C3 Seeed Studio XIAO](https://www.seeedstudio.com/Seeed-XIAO-ESP32C3-p-5431.html)
-- 3D Printed Enclosure ([base](./aqaio-base.stl), [retainer](./aqaio-retainer.stl), [grill](./aqaio-grill.stl))
+- 3D Printed Enclosure ([base](./3D/aqaio-base.stl), [retainer](./3D/aqaio-retainer.stl), [grill](./3D/aqaio-grill.stl))
 - M2.5 x 6mm screws
 
 ## Wiring
@@ -23,4 +23,4 @@ A simple air quality monitor with a e-ink display, built with off the shelf part
 | RST      |       3      | EPD (GDEH0154D67) |
 | BUSY     |       2      | EPD (GDEH0154D67) |
 
-![AQAIO Wiring Diagram](./aqaio-wiring.png)
+![AQAIO Wiring Diagram](./img/aqaio-wiring.png)
