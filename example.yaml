@@ -35,9 +35,17 @@ external_components:
       url: https://github.com/w4ilun/aqaio
     components: [aqaio]
 
+time:
+  - platform: sntp
+    id: ntp_time
+    timezone: "America/New_York" # Your timezone
+    update_interval: 15min
+    servers:
+      - "pool.ntp.org"
+
 aqaio:
-  id: aqaio_hub
   update_interval: 60s
+  time_id: ntp_time
   # I2C pins (SEN66)
   i2c_sda: 10
   i2c_scl: 9
@@ -51,6 +59,11 @@ aqaio:
   # Display settings
   display_rotation: 0   # 0=vertical_up, 1=horizontal_left, 2=vertical_down, 3=horizontal_right
   use_fahrenheit: false
+  # Air quality thresholds for "good" face indicator
+  aq_co2_max: 1000
+  aq_voc_max: 150
+  aq_nox_max: 1
+  aq_pm_max: 12
 
 sensor:
   - platform: aqaio
@@ -72,4 +85,3 @@ sensor:
       name: "PM 4.0"
     pm_10_0:
       name: "PM 10"
-
